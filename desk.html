@@ -3,70 +3,85 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Shop desk — 3D Works</title>
-  <meta name="theme-color" content="#efe8dc">
+  <title>Board — 3D Works</title>
+  <meta name="theme-color" content="#0e0e0e">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/site.css">
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
-    }
-  }
-  </script>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%231c1915' width='32' height='32'/%3E%3Ctext x='5' y='23' fill='%23efe8dc' font-family='Georgia' font-size='16' font-style='italic'%3E3D%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%230e0e0e' width='32' height='32'/%3E%3Ctext x='4' y='22' fill='%233ddc6a' font-family='Arial' font-size='14' font-weight='700'%3E3D%3C/text%3E%3C/svg%3E">
 </head>
 <body>
-  <main class="wrap" id="content">
-    <p class="kicker page-start">Jobs</p>
-    <h1>Shop desk</h1>
-    <p class="desk-intro">The same jobs a customer opens on their phone. Set the price and move the status. It stays in this browser.</p>
-    <div class="ledger" id="ledger"></div>
+  <main class="board-page" id="content">
+    <div class="board-bar">
+      <h1>Board</h1>
+      <p id="count"></p>
+    </div>
+    <div class="board" id="board"></div>
   </main>
   <script type="module">
     import { mountChrome } from "./js/chrome.js";
-    import { listJobs, saveJob, statuses, jobNo } from "./js/store.js";
+    import { listJobs, saveJob, statuses, jobNo, money } from "./js/store.js";
 
     mountChrome("desk");
-    const ledger = document.getElementById("ledger");
-    const options = statuses().map((name) => `<option>${name}</option>`).join("");
+    const board = document.getElementById("board");
+    const count = document.getElementById("count");
+    let jobs = [];
+
     await paint();
 
     async function paint() {
-      const jobs = await listJobs();
-      ledger.innerHTML = `
-        <div class="head"><span>Job</span><span>Part</span><span>Customer</span><span>Material</span><span>Status</span><span>Price</span></div>
-        ${jobs.map((job) => `
-          <div class="row" data-id="${job.id}">
+      jobs = await listJobs();
+      count.textContent = jobs.length + (jobs.length === 1 ? " job" : " jobs");
+      board.innerHTML = statuses().map((status) => {
+        const items = jobs.filter((job) => job.status === status);
+        const cards = items.map((job) => `
+          <a class="card" draggable="true" href="job.html?id=${job.id}" data-id="${job.id}">
             <span class="mono">${jobNo(job.id)}</span>
-            <a class="partlink" href="job.html?id=${job.id}">${escapeHtml(job.title)}</a>
-            <span>${escapeHtml(job.customer)}</span>
-            <span>${escapeHtml(job.material)} × ${job.qty}</span>
-            <label class="field"><span class="sr">Status for ${escapeHtml(job.title)}</span>
-              <select data-status>${options}</select>
-            </label>
-            <label class="field"><span class="sr">Price for ${escapeHtml(job.title)}</span>
-              <input data-price inputmode="decimal" value="${job.price ?? ""}" placeholder="Pending">
-            </label>
-          </div>
-        `).join("")}
-      `;
-      jobs.forEach((job) => {
-        const row = ledger.querySelector(`[data-id="${job.id}"]`);
-        const select = row.querySelector("[data-status]");
-        select.value = job.status;
-        select.addEventListener("change", async () => {
-          job.status = select.value;
-          await saveJob(job);
+            <strong>${escapeHtml(job.title)}</strong>
+            <span class="meta">${escapeHtml(job.customer)} · ${escapeHtml(job.material)} × ${job.qty}</span>
+            <span class="meta">${money(job.price)}</span>
+          </a>
+        `).join("");
+        return `
+          <section class="col" data-status="${status}">
+            <div class="col-head">${status} <span>${items.length}</span></div>
+            <div class="col-list">
+              ${cards || '<p class="empty">Nothing here</p>'}
+            </div>
+          </section>
+        `;
+      }).join("");
+
+      board.querySelectorAll(".card").forEach((card) => {
+        card.addEventListener("dragstart", (event) => {
+          event.dataTransfer.setData("text/plain", card.dataset.id);
+          event.dataTransfer.effectAllowed = "move";
         });
-        row.querySelector("[data-price]").addEventListener("change", async (event) => {
-          const raw = event.target.value.trim();
-          job.price = raw === "" ? null : Number(raw);
-          if (job.price != null && Number.isNaN(job.price)) job.price = null;
+        card.addEventListener("dragend", () => {
+          card.dataset.dragged = "1";
+          setTimeout(() => delete card.dataset.dragged, 0);
+        });
+        card.addEventListener("click", (event) => {
+          if (card.dataset.dragged) event.preventDefault();
+        });
+      });
+
+      board.querySelectorAll(".col").forEach((col) => {
+        col.addEventListener("dragover", (event) => {
+          event.preventDefault();
+          col.classList.add("is-over");
+        });
+        col.addEventListener("dragleave", () => col.classList.remove("is-over"));
+        col.addEventListener("drop", async (event) => {
+          event.preventDefault();
+          col.classList.remove("is-over");
+          const id = event.dataTransfer.getData("text/plain");
+          const job = jobs.find((item) => item.id === id);
+          if (!job || job.status === col.dataset.status) return;
+          job.status = col.dataset.status;
           await saveJob(job);
+          await paint();
         });
       });
     }

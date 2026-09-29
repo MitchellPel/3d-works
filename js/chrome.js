@@ -2,7 +2,7 @@ const LINKS = [
   ["home", "Home", "index.html"],
   ["job", "Job", "job.html?id=jn-1048"],
   ["send", "Send", "send.html"],
-  ["desk", "Desk", "desk.html"],
+  ["desk", "Board", "desk.html"],
 ];
 
 export function mountChrome(active) {
@@ -10,13 +10,14 @@ export function mountChrome(active) {
   header.className = "top";
   header.innerHTML = `
     <a class="skip" href="#content">Skip to content</a>
-    <a class="mark" href="index.html"><i>3D</i> Works</a>
+    <a class="mark" href="index.html"><b>3D</b> Works</a>
     <nav aria-label="Shop">
-      <a href="desk.html">Shop desk</a>
+      <a href="desk.html">Board</a>
       <a class="btn" href="send.html">Send a model</a>
     </nav>
   `;
   document.body.prepend(header);
+  if (active === "desk") document.body.classList.add("is-board");
 
   const dock = document.createElement("nav");
   dock.className = "dock";
@@ -35,7 +36,6 @@ export function mountChrome(active) {
 
 export function stageHtml() {
   return `
-    <div class="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     <p class="turn">Drag to turn</p>
   `;
 }

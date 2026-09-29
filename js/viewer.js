@@ -7,7 +7,7 @@ const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export function mountViewer(container) {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color("#24211d");
+  scene.background = new THREE.Color("#050505");
 
   const camera = new THREE.PerspectiveCamera(32, 1, 0.01, 100);
   camera.position.set(3.2, 1.6, 4.2);
