@@ -56,9 +56,9 @@ p, .lede { text-wrap: pretty; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  height: 60px;
-  padding: 0 20px;
+  gap: 12px 16px;
+  min-height: 60px;
+  padding: 8px 20px;
   border-bottom: 1px solid var(--line);
   background: var(--bg);
 }
@@ -71,7 +71,7 @@ p, .lede { text-wrap: pretty; }
 
 .mark b { color: var(--green-text); font-weight: 600; }
 
-.top nav { display: flex; align-items: center; gap: 16px; }
+.top nav { display: flex; flex: 1; min-width: 0; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px 14px; }
 
 .top nav a:not(.btn) { text-decoration: none; color: var(--soft); }
 .top nav a:not(.btn):hover { color: var(--ink); }
@@ -370,8 +370,8 @@ textarea { min-height: 96px; resize: vertical; }
 }
 
 .col {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 1 0 200px;
+  min-width: 200px;
   display: flex;
   flex-direction: column;
   min-height: 0;
