@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Send a model — 3D Works</title>
+  <meta name="theme-color" content="#efe8dc">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%231c1915' width='32' height='32'/%3E%3Ctext x='5' y='23' fill='%23efe8dc' font-family='Georgia' font-size='16' font-style='italic'%3E3D%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <main class="wrap" id="content">
+    <section class="split">
+      <form class="form" id="send-form">
+        <div>
+          <p class="kicker">New print</p>
+          <h1>Send a mesh.</h1>
+          <p class="lede">It shows on the right before anyone sets a price. STL and OBJ only, for this demo.</p>
+        </div>
+        <label class="field"><span>Your name</span><input name="customer" required autocomplete="name"></label>
+        <label class="field"><span>Part name</span><input name="title" required placeholder="Bracket, lid, scan"></label>
+        <fieldset>
+          <legend>Material</legend>
+          <div class="choices">
+            <label><input type="radio" name="material" value="PLA" checked>PLA</label>
+            <label><input type="radio" name="material" value="PETG">PETG</label>
+            <label><input type="radio" name="material" value="Resin">Resin</label>
+            <label><input type="radio" name="material" value="Nylon">Nylon</label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <span>Colour</span>
+          <div class="swatches" role="radiogroup" aria-label="Colour">
+            <button type="button" class="swatch" style="--c:#e6e0d4" data-color="#e6e0d4" aria-pressed="true" aria-label="Natural"></button>
+            <button type="button" class="swatch" style="--c:#2f2f2d" data-color="#2f2f2d" aria-pressed="false" aria-label="Black"></button>
+            <button type="button" class="swatch" style="--c:#e25b12" data-color="#e25b12" aria-pressed="false" aria-label="Orange"></button>
+            <button type="button" class="swatch" style="--c:#8d9398" data-color="#8d9398" aria-pressed="false" aria-label="Grey"></button>
+          </div>
+        </div>
+        <label class="field qty"><span>Quantity</span><input name="qty" type="number" min="1" max="99" value="1" required></label>
+        <label class="field"><span>Notes</span><textarea name="notes" placeholder="Layer height, colour match, deadline"></textarea></label>
+        <p class="err" id="err" role="alert"></p>
+        <div class="actions">
+          <button class="btn" type="submit">Create the job</button>
+        </div>
+      </form>
+      <div class="stage" id="stage" role="region" aria-label="Preview of the file you send.">
+        <p class="stage-hint" id="hint">
+          Drop an STL or OBJ
+          <span class="sub" id="file-label">Nothing chosen yet</span>
+          <button class="btn light" type="button" id="pick">Choose a file</button>
+        </p>
+      </div>
+    </section>
+  </main>
+  <input id="file" type="file" accept=".stl,.obj,model/stl,model/obj" hidden>
+  <script type="module">
+    import { mountChrome, stageHtml } from "./js/chrome.js";
+    import { createJob } from "./js/store.js";
+    import { mountViewer } from "./js/viewer.js";
+
+    mountChrome("send");
+    const stage = document.getElementById("stage");
+    stage.insertAdjacentHTML("beforeend", stageHtml());
+    const viewer = mountViewer(stage);
+    const fileInput = document.getElementById("file");
+    const err = document.getElementById("err");
+    const fileLabel = document.getElementById("file-label");
+    let chosen = null;
+    let color = "#e6e0d4";
+
+    document.getElementById("pick").addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", () => take(fileInput.files[0]));
+
+    stage.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      stage.classList.add("is-over");
+    });
+    stage.addEventListener("dragleave", () => stage.classList.remove("is-over"));
+    stage.addEventListener("drop", (event) => {
+      event.preventDefault();
+      stage.classList.remove("is-over");
+      take(event.dataTransfer.files[0]);
+    });
+
+    document.querySelectorAll(".swatch").forEach((button) => {
+      button.addEventListener("click", () => {
+        color = button.dataset.color;
+        document.querySelectorAll(".swatch").forEach((swatch) => {
+          swatch.setAttribute("aria-pressed", swatch === button ? "true" : "false");
+        });
+        if (chosen) viewer.setColor(color);
+      });
+    });
+
+    document.getElementById("send-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      err.textContent = "";
+      if (!chosen) {
+        err.textContent = "Add an STL or OBJ so the job has a preview.";
+        return;
+      }
+      const data = new FormData(event.currentTarget);
+      const job = await createJob({
+        customer: data.get("customer").trim(),
+        title: data.get("title").trim(),
+        material: data.get("material"),
+        color,
+        qty: Number(data.get("qty")),
+        notes: data.get("notes").trim(),
+      }, chosen);
+      location.href = "job.html?id=" + job.id;
+    });
+
+    async function take(file) {
+      err.textContent = "";
+      if (!file) return;
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (ext !== "stl" && ext !== "obj") {
+        err.textContent = "Use an STL or OBJ file.";
+        return;
+      }
+      if (file.size > 40 * 1024 * 1024) {
+        err.textContent = "Use a mesh under 40 MB for this demo.";
+        return;
+      }
+      const buffer = await file.arrayBuffer();
+      try {
+        viewer.showBuffer(buffer, ext, color);
+      } catch (error) {
+        err.textContent = "That file could not be read.";
+        return;
+      }
+      chosen = { name: file.name, buffer };
+      fileLabel.textContent = file.name;
+    }
+  </script>
+</body>
+</html>

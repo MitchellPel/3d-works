@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop desk — 3D Works</title>
+  <meta name="theme-color" content="#efe8dc">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%231c1915' width='32' height='32'/%3E%3Ctext x='5' y='23' fill='%23efe8dc' font-family='Georgia' font-size='16' font-style='italic'%3E3D%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <main class="wrap" id="content">
+    <p class="kicker page-start">Jobs</p>
+    <h1>Shop desk</h1>
+    <p class="desk-intro">The same jobs a customer opens on their phone. Set the price and move the status. It stays in this browser.</p>
+    <div class="ledger" id="ledger"></div>
+  </main>
+  <script type="module">
+    import { mountChrome } from "./js/chrome.js";
+    import { listJobs, saveJob, statuses, jobNo } from "./js/store.js";
+
+    mountChrome("desk");
+    const ledger = document.getElementById("ledger");
+    const options = statuses().map((name) => `<option>${name}</option>`).join("");
+    await paint();
+
+    async function paint() {
+      const jobs = await listJobs();
+      ledger.innerHTML = `
+        <div class="head"><span>Job</span><span>Part</span><span>Customer</span><span>Material</span><span>Status</span><span>Price</span></div>
+        ${jobs.map((job) => `
+          <div class="row" data-id="${job.id}">
+            <span class="mono">${jobNo(job.id)}</span>
+            <a class="partlink" href="job.html?id=${job.id}">${escapeHtml(job.title)}</a>
+            <span>${escapeHtml(job.customer)}</span>
+            <span>${escapeHtml(job.material)} × ${job.qty}</span>
+            <label class="field"><span class="sr">Status for ${escapeHtml(job.title)}</span>
+              <select data-status>${options}</select>
+            </label>
+            <label class="field"><span class="sr">Price for ${escapeHtml(job.title)}</span>
+              <input data-price inputmode="decimal" value="${job.price ?? ""}" placeholder="Pending">
+            </label>
+          </div>
+        `).join("")}
+      `;
+      jobs.forEach((job) => {
+        const row = ledger.querySelector(`[data-id="${job.id}"]`);
+        const select = row.querySelector("[data-status]");
+        select.value = job.status;
+        select.addEventListener("change", async () => {
+          job.status = select.value;
+          await saveJob(job);
+        });
+        row.querySelector("[data-price]").addEventListener("change", async (event) => {
+          const raw = event.target.value.trim();
+          job.price = raw === "" ? null : Number(raw);
+          if (job.price != null && Number.isNaN(job.price)) job.price = null;
+          await saveJob(job);
+        });
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      })[ch]);
+    }
+  </script>
+</body>
+</html>

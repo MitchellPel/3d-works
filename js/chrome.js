@@ -1,0 +1,41 @@
+const LINKS = [
+  ["home", "Home", "index.html"],
+  ["job", "Job", "job.html?id=jn-1048"],
+  ["send", "Send", "send.html"],
+  ["desk", "Desk", "desk.html"],
+];
+
+export function mountChrome(active) {
+  const header = document.createElement("header");
+  header.className = "top";
+  header.innerHTML = `
+    <a class="skip" href="#content">Skip to content</a>
+    <a class="mark" href="index.html"><i>3D</i> Works</a>
+    <nav aria-label="Shop">
+      <a href="desk.html">Shop desk</a>
+      <a class="btn" href="send.html">Send a model</a>
+    </nav>
+  `;
+  document.body.prepend(header);
+
+  const dock = document.createElement("nav");
+  dock.className = "dock";
+  dock.setAttribute("aria-label", "Pages");
+  dock.innerHTML = LINKS.map(([key, label, href]) => {
+    const current = key === active ? ' aria-current="page"' : "";
+    return `<a href="${href}"${current}>${label}</a>`;
+  }).join("");
+  document.body.append(dock);
+
+  const foot = document.createElement("p");
+  foot.className = "colophon";
+  foot.textContent = "Demo in this browser. Files are not uploaded. Pay does not charge a card.";
+  document.body.insertBefore(foot, dock);
+}
+
+export function stageHtml() {
+  return `
+    <div class="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <p class="turn">Drag to turn</p>
+  `;
+}

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D Works</title>
+  <meta name="description" content="Turn a scan or a print file in the browser before the job is approved.">
+  <meta name="theme-color" content="#efe8dc">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/site.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%231c1915' width='32' height='32'/%3E%3Ctext x='5' y='23' fill='%23efe8dc' font-family='Georgia' font-size='16' font-style='italic'%3E3D%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <main class="wrap" id="content">
+    <section class="split hero">
+      <div class="traveler">
+        <p class="stamp">Sample</p>
+        <p class="kicker">Print traveler · JN-1048</p>
+        <h1>See the part before you approve it.</h1>
+        <p class="lede">A customer gets one link. The scan is on the page, large enough to turn on a phone. Sending a file for print works the same way.</p>
+        <div class="actions">
+          <a class="btn" href="job.html?id=jn-1048">Open this job</a>
+          <a class="btn ghost" href="send.html">Send a model</a>
+        </div>
+        <dl class="titleblock">
+          <div><dt>Part</dt><dd>Small jug</dd></div>
+          <div><dt>Material</dt><dd>Grey resin</dd></div>
+          <div><dt>Status</dt><dd>In review</dd></div>
+          <div><dt>Held in</dt><dd>This browser</dd></div>
+        </dl>
+      </div>
+      <div class="stage" id="stage" role="region" aria-label="Sample jug. Drag to turn the part."></div>
+    </section>
+
+    <section class="steps" aria-labelledby="path">
+      <p class="kicker">The path</p>
+      <h2 id="path">How a job moves</h2>
+      <ol>
+        <li><span>01</span><p>The shop adds a scan, or a customer sends an STL or OBJ.</p></li>
+        <li><span>02</span><p>The part opens on a phone. They turn it and check the shape.</p></li>
+        <li><span>03</span><p>The shop sets a price on the desk. That number shows on the same job.</p></li>
+        <li><span>04</span><p>The customer approves it here. The printer stays in the shop.</p></li>
+      </ol>
+    </section>
+
+    <section class="bench" aria-labelledby="bench-title">
+      <div class="bench-head">
+        <h2 id="bench-title">On the bench</h2>
+        <a href="desk.html">Shop desk</a>
+      </div>
+      <div class="slips" id="slips"></div>
+    </section>
+  </main>
+  <script type="module">
+    import { mountChrome, stageHtml } from "./js/chrome.js";
+    import { listJobs, jobNo } from "./js/store.js";
+    import { mountViewer } from "./js/viewer.js";
+
+    mountChrome("home");
+    const stage = document.getElementById("stage");
+    stage.insertAdjacentHTML("beforeend", stageHtml());
+    mountViewer(stage).showKind("jug", "#c8c2b8");
+
+    const slips = document.getElementById("slips");
+    const jobs = await listJobs();
+    slips.innerHTML = jobs.map((job) => `
+      <a class="slip" href="job.html?id=${job.id}">
+        <span class="kicker">${jobNo(job.id)}</span>
+        <strong>${escapeHtml(job.title)}</strong>
+        <span>${escapeHtml(job.customer)} · ${escapeHtml(job.material)}</span>
+        <em>${escapeHtml(job.status)}</em>
+      </a>
+    `).join("");
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      })[ch]);
+    }
+  </script>
+</body>
+</html>
