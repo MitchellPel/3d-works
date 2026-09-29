@@ -1,18 +1,18 @@
 :root {
-  --bg: #f6f7f4;
-  --panel: #ffffff;
-  --card: #ffffff;
-  --ink: #121212;
-  --soft: #3f3f46;
-  --line: #e4e4e7;
-  --green: #16a34a;
-  --green-ink: #000000;
-  --green-text: #166534;
-  --danger: #b91c1c;
+  --bg: #070b09;
+  --panel: #101612;
+  --card: #0c1210;
+  --ink: #f3f7f4;
+  --soft: #9aa89f;
+  --line: #1c2a22;
+  --green: #3ddc6a;
+  --green-ink: #06210f;
+  --green-text: #3ddc6a;
+  --danger: #ff8a8a;
   --sans: "Work Sans", "Segoe UI", sans-serif;
   --display: "Outfit", "Work Sans", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -86,11 +86,12 @@ p, .lede { text-wrap: pretty; }
   min-height: calc(100dvh - 160px);
   padding: 24px 0;
 }
+.hero h1 { color: var(--green); }
 
 .stage {
   position: relative;
-  background: #111111;
-  border: 1px solid #111111;
+  background: #050806;
+  border: 1px solid #214232;
   border-radius: 16px;
   min-height: 480px;
   height: 100%;
@@ -190,7 +191,7 @@ h2 {
 
 .btn:hover { background: #22c55e; }
 .btn, .card, .slip { transition: border-color 180ms ease, background-color 180ms ease; }
-.btn.ghost { background: #fff; color: var(--ink); border-color: var(--line); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
 .btn.ghost:hover { border-color: var(--green); color: var(--green-text); }
 .btn.light { background: transparent; color: #f4f4f2; border-color: #525252; }
 .btn.light:hover { border-color: var(--green); color: #fff; }
@@ -374,7 +375,7 @@ textarea { min-height: 96px; resize: vertical; }
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: #fff;
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 12px;
 }
@@ -389,8 +390,13 @@ textarea { min-height: 96px; resize: vertical; }
   font-weight: 600;
 }
 .col-head span {
-  color: var(--soft);
-  font-weight: 400;
+  background: var(--green);
+  color: var(--green-ink);
+  border-radius: 999px;
+  min-width: 1.6rem;
+  padding: 2px 8px;
+  text-align: center;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 .col-list {
@@ -415,11 +421,25 @@ textarea { min-height: 96px; resize: vertical; }
   text-decoration: none;
   cursor: pointer;
 }
-.card:hover { border-color: var(--green); }
+.card:hover, .card.is-on { border-color: var(--green); }
 .card strong { font-size: 1rem; font-weight: 600; }
 .card .meta { color: var(--soft); font-size: 0.85rem; }
 .mono { font-family: var(--mono); font-size: 0.75rem; color: var(--green-text); font-variant-numeric: tabular-nums; }
 
+.pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 0; padding: 0; list-style: none; }
+.pills li { border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; color: var(--soft); font-size: 0.85rem; }
+.quote-grid { display: grid; grid-template-columns: minmax(220px, 0.85fr) minmax(260px, 1.15fr) minmax(220px, 0.8fr); gap: 12px; padding: 16px 0 32px; }
+.quote-grid .panel { display: grid; gap: 12px; align-content: start; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.quote-grid .stage { min-height: 520px; }
+.estimate { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.estimate .price { color: var(--green); }
+.detail {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+  margin: 0 16px 16px; padding: 12px 14px;
+  border: 1px solid #214232; border-radius: 12px; background: var(--panel);
+}
+.detail[hidden] { display: none; }
+.detail strong { font-family: var(--display); font-size: 1.1rem; }
 .soon { padding: 8px 0 28px; }
 .soon-card { align-content: start; }
 .soon-card p { margin: 0; color: var(--soft); }
@@ -453,7 +473,7 @@ body.is-board .colophon { display: none; }
 @media (max-width: 800px) {
   .top nav { display: none; }
   .wrap { padding: 0 16px; }
-  .split { grid-template-columns: 1fr; min-height: 0; padding-top: 16px; }
+  .split, .quote-grid { grid-template-columns: 1fr; min-height: 0; padding-top: 16px; }
   .stage { order: -1; min-height: 0; height: 36vh; }
   .steps ol, .slips { grid-template-columns: 1fr; }
   .board-page { height: calc(100dvh - 60px - 52px - env(safe-area-inset-bottom)); }

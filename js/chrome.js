@@ -12,8 +12,12 @@ export function mountChrome(active) {
     <a class="skip" href="#content">Skip to content</a>
     <a class="mark" href="index.html"><b>3D</b> Works</a>
     <nav aria-label="Shop">
+      <a href="index.html">Home</a>
+      <a href="index.html#path">Process</a>
+      <a href="index.html#materials">Materials</a>
+      <a href="send.html">Quote</a>
       <a href="desk.html">Board</a>
-      <a class="btn" href="send.html">Send a model</a>
+      <a class="btn" href="send.html">Get a quote</a>
     </nav>
   `;
   document.body.prepend(header);

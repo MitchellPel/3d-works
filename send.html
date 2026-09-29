@@ -21,15 +21,23 @@
 </head>
 <body>
   <main class="wrap" id="content">
-    <section class="split">
-      <form class="form" id="send-form">
-        <div>
-          <p class="kicker">New print</p>
-          <h1>Send a mesh.</h1>
-          <p class="lede">It shows on the right before anyone sets a price. STL and OBJ only, for this demo.</p>
-        </div>
+    <form class="quote-grid" id="send-form">
+      <div class="panel">
+        <p class="kicker">1 · Upload</p>
+        <h2>Your file</h2>
+        <p class="note">STL or OBJ. It stays in this browser.</p>
         <label class="field"><span>Your name</span><input name="customer" required autocomplete="name"></label>
         <label class="field"><span>Part name</span><input name="title" required placeholder="Bracket, lid, scan"></label>
+        <label class="field"><span>Notes</span><textarea name="notes" placeholder="Layer height, deadline"></textarea></label>
+        <p class="note" id="file-label">Nothing chosen yet</p>
+        <button class="btn" type="button" id="pick">Choose a file</button>
+      </div>
+      <div class="panel stage" id="stage" role="region" aria-label="Preview of the file you send.">
+        <p class="stage-hint" id="hint">Drop an STL or OBJ<span class="sub">Preview before the shop prices it</span></p>
+      </div>
+      <div class="panel">
+        <p class="kicker">3 · Settings</p>
+        <h2>Print settings</h2>
         <fieldset>
           <legend>Material</legend>
           <div class="choices">
@@ -44,25 +52,20 @@
           <div class="swatches" role="radiogroup" aria-label="Colour">
             <button type="button" class="swatch" style="--c:#e6e0d4" data-color="#e6e0d4" aria-pressed="true" aria-label="Natural"></button>
             <button type="button" class="swatch" style="--c:#2f2f2d" data-color="#2f2f2d" aria-pressed="false" aria-label="Black"></button>
-            <button type="button" class="swatch" style="--c:#e25b12" data-color="#e25b12" aria-pressed="false" aria-label="Orange"></button>
+            <button type="button" class="swatch" style="--c:#3ddc6a" data-color="#3ddc6a" aria-pressed="false" aria-label="Green"></button>
             <button type="button" class="swatch" style="--c:#8d9398" data-color="#8d9398" aria-pressed="false" aria-label="Grey"></button>
           </div>
         </div>
         <label class="field qty"><span>Quantity</span><input name="qty" type="number" min="1" max="99" value="1" required></label>
-        <label class="field"><span>Notes</span><textarea name="notes" placeholder="Layer height, colour match, deadline"></textarea></label>
-        <p class="err" id="err" role="alert"></p>
-        <div class="actions">
-          <button class="btn" type="submit">Create the job</button>
+        <div class="estimate">
+          <p class="kicker">Estimate</p>
+          <p class="price">—</p>
+          <p class="note">Sample only. The shop sets the real price.</p>
         </div>
-      </form>
-      <div class="stage" id="stage" role="region" aria-label="Preview of the file you send.">
-        <p class="stage-hint" id="hint">
-          Drop an STL or OBJ
-          <span class="sub" id="file-label">Nothing chosen yet</span>
-          <button class="btn light" type="button" id="pick">Choose a file</button>
-        </p>
+        <p class="err" id="err" role="alert"></p>
+        <button class="btn" type="submit">Submit request</button>
       </div>
-    </section>
+    </form>
   </main>
   <input id="file" type="file" accept=".stl,.obj,model/stl,model/obj" hidden>
   <script type="module">
